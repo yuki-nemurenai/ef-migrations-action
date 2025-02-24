@@ -1,3 +1,5 @@
+[![EF Migrations Action Test](https://github.com/yuki-nemurenai/ef-migrations-action/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/yuki-nemurenai/ef-migrations-action/actions/workflows/test.yaml)
+
 # EF Core Migrations GitHub Action
 
 A GitHub Action for automating .NET Entity Framework Core migrations in your CI/CD pipeline. This action supports both single-database and multi-database scenarios, making it flexible for various application architectures.
