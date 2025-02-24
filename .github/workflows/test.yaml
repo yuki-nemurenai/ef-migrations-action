@@ -64,7 +64,6 @@ jobs:
             echo "## Migrations Results Table :bookmark_tabs:"
             echo "${{ steps.ef-database-update.outputs.result }}"
             echo ""
-            echo "\`\`\`"
             } >> $GITHUB_STEP_SUMMARY
 
 
