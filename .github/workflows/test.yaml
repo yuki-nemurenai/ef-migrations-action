@@ -36,6 +36,9 @@ jobs:
       - name: Install EF Core CLI
         run: dotnet tool install dotnet-ef --global
 
+      - name: Restore dependencies
+        run: dotnet restore
+
       - name: Dotnet build project
         run: |
           dotnet build ${{ env.PROJECT }} \
