@@ -54,7 +54,7 @@ jobs:
 
       - name: Migrations ${{ matrix.DB_CONNECTION_TYPE }}
         if: ${{ matrix.DB_CONNECTION_TYPE == 'singleDB' }}
-        id: ef-database-update
+        id: ef-database-update-single
         env:
             ASPNETCORE_ENVIRONMENT: Development
         uses: ./.github/actions/ef-database-update
@@ -64,7 +64,7 @@ jobs:
 
       - name: Migrations ${{ matrix.DB_CONNECTION_TYPE }}
         if: ${{ matrix.DB_CONNECTION_TYPE == 'multipleDB' }}
-        id: ef-database-update
+        id: ef-database-update-multiple
         env:
             ASPNETCORE_ENVIRONMENT: Development
         uses: ./.github/actions/ef-database-update
@@ -74,16 +74,23 @@ jobs:
                 IdentityDbContext=${{ env.CONNECTION }}
                 ApplicationDbContext=${{ env.CONNECTION }}
 
-      - name: Migrations summary
-        if: ${{ success() }}
+      - name: Migrations summary ${{ matrix.DB_CONNECTION_TYPE }}
+        if: ${{ success() && matrix.DB_CONNECTION_TYPE == 'singleDB' }}
         run: |
             { 
-            echo "## Migrations Results Table :bookmark_tabs:"
-            echo "${{ steps.ef-database-update.outputs.result }}"
+            echo "## Migrations Results Table ${{ matrix.DB_CONNECTION_TYPE }} :bookmark_tabs:"
+            echo "${{ steps.ef-database-update-single.outputs.result }}"
             echo ""
             } >> $GITHUB_STEP_SUMMARY
 
-    
+      - name: Migrations summary ${{ matrix.DB_CONNECTION_TYPE }}
+        if: ${{ success() && matrix.DB_CONNECTION_TYPE == 'multipleDB' }}
+        run: |
+            { 
+            echo "## Migrations Results Table ${{ matrix.DB_CONNECTION_TYPE }} :bookmark_tabs:"
+            echo "${{ steps.ef-database-update-multiple.outputs.result }}"
+            echo ""
+            } >> $GITHUB_STEP_SUMMARY
 
 
 
