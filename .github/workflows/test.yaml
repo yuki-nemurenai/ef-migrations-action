@@ -12,6 +12,7 @@ on:
 
 jobs:
   test:
+    name: Integration Test ${{ matrix.DB_CONNECTION_TYPE }}
     runs-on: ubuntu-latest
     services:
         postgres:
@@ -27,6 +28,9 @@ jobs:
             --health-retries 5
           ports:
             - 5432:5432
+    strategy:
+      matrix:
+        DB_CONNECTION_TYPE: [singleDB, multipleDB]
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet
@@ -48,7 +52,8 @@ jobs:
             --property WarningLevel=0 \
             /clp:ErrorsOnly
 
-      - name: Migrations
+      - name: Migrations ${{ matrix.DB_CONNECTION_TYPE }}
+        if: ${{ matrix.DB_CONNECTION_TYPE == 'singleDB' }}
         id: ef-database-update
         env:
             ASPNETCORE_ENVIRONMENT: Development
@@ -56,6 +61,18 @@ jobs:
         with:
             project: ${{ env.PROJECT }}
             connection: ${{ env.CONNECTION }}
+
+      - name: Migrations ${{ matrix.DB_CONNECTION_TYPE }}
+        if: ${{ matrix.DB_CONNECTION_TYPE == 'multipleDB' }}
+        id: ef-database-update
+        env:
+            ASPNETCORE_ENVIRONMENT: Development
+        uses: ./.github/actions/ef-database-update
+        with:
+            project: ${{ env.PROJECT }}
+            connections: |
+                IdentityDbContext=${{ env.CONNECTION }}
+                ApplicationDbContext=${{ env.CONNECTION }}
 
       - name: Migrations summary
         if: ${{ success() }}
@@ -65,6 +82,8 @@ jobs:
             echo "${{ steps.ef-database-update.outputs.result }}"
             echo ""
             } >> $GITHUB_STEP_SUMMARY
+
+    
 
 
 
