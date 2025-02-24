@@ -52,7 +52,7 @@ jobs:
         id: ef-database-update
         env:
             ASPNETCORE_ENVIRONMENT: Development
-        uses: ./.github/actions/ef-migrations-action
+        uses: ./.github/actions/ef-database-update
         with:
             project: ${{ env.PROJECT }}
             connection: ${{ env.CONNECTION }}
