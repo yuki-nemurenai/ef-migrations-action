@@ -1,0 +1,35 @@
+name: "EF Database Update Action"
+description: "Run EF database update for a given project"
+
+inputs:
+  project:
+    required: true
+    description: The migrations project
+  connection:
+    required: false
+    description: The connection string to use
+  connections:
+    description: Multiple connection strings
+    required: false
+outputs:
+  logs:
+    description: The logs of the migrations
+    value: ${{ steps.ef-database-update.outputs.logs }}
+  result:
+    description: The result summary table of the migrations
+    value: ${{ steps.ef-database-update.outputs.result }}
+
+
+runs:
+  using: 'composite'
+  steps:
+    - name: EF Database Update
+      id: ef-database-update
+      shell: bash
+      env:
+        project: ${{ inputs.project }}
+        connection: ${{ inputs.connection }}
+        connections: "${{ inputs.connections }}"
+      run: "${{ github.action_path }}//migrations.sh"
+
+

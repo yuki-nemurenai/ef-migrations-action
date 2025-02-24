@@ -1,0 +1,68 @@
+name: EF Migrations Action Test
+
+env:
+  DOTNET_VERSION: 9.0.x
+  PROJECT: EFCoreDemo/EFCoreDemo.csproj
+  CONNECTION: Server=localhost;Port=5432;Database=postgres_demo_db;User ID=postgres_demo_user;Password=postgres_demo_password;
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+        postgres:
+          image: postgres:15
+          env:
+            POSTGRES_USER: postgres_demo_user
+            POSTGRES_PASSWORD: postgres_demo_password
+            POSTGRES_DB: postgres_demo_db
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Install EF Core CLI
+        run: dotnet tool install dotnet-ef --global
+
+      - name: Dotnet build project
+        run: |
+          dotnet build ${{ env.PROJECT }} \
+            --no-restore \
+            --nologo \
+            --verbosity quiet \
+            --property WarningLevel=0 \
+            /clp:ErrorsOnly
+
+      - name: Migrations
+        id: ef-database-update
+        env:
+            ASPNETCORE_ENVIRONMENT: Development
+        uses: ./.github/actions/ef-migrations-action
+        with:
+            project: ${{ env.PROJECT }}
+            connection: ${{ env.CONNECTION }}
+
+      - name: Migrations summary
+        if: ${{ success() }}
+        run: |
+            { 
+            echo "## Migrations Results Table :bookmark_tabs:"
+            echo "${{ steps.ef-database-update.outputs.result }}"
+            echo ""
+            echo "\`\`\`"
+            } >> $GITHUB_STEP_SUMMARY
+
+
+
